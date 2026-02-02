@@ -1,3 +1,5 @@
+package honestcalculator;
+
 import java.util.Scanner;
 
 public class Main {
@@ -5,7 +7,7 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         Logic logic = new Logic();
 
-        float memory = 0.0f;
+        double memory = 0.0;
 
         String msg_0 = "Enter an equation";
         String msg_1 = "Do you even know what numbers are? Stay focused!";
@@ -20,7 +22,6 @@ public class Main {
             String input = scanner.nextLine().trim();
             String[] parts = input.split("\\s+");
 
-            // struttura: x oper y
             if (parts.length != 3) {
                 System.out.println(msg_1);
                 continue;
@@ -30,14 +31,12 @@ public class Main {
             String oper = parts[1];
             String yStr = parts[2];
 
-            // operatore valido?
             if (!logic.isValidOperator(oper)) {
                 System.out.println(msg_2);
                 continue;
             }
 
-            // parse di x e y (supporta M) + gestione virgola
-            float x, y;
+            double x, y;
             try {
                 x = logic.parseValue(xStr, memory);
                 y = logic.parseValue(yStr, memory);
@@ -46,40 +45,40 @@ public class Main {
                 continue;
             }
 
-            // divisione per zero
-            if (oper.equals("/") && y == 0.0f) {
+            // ✅ FLOWCHART: prima stampa i messaggi lazy, poi controlla divisione per zero
+            logic.check(x, y, oper);
+
+            if (oper.equals("/") && y == 0.0) {
                 System.out.println(msg_3);
                 continue;
             }
 
-            float result = logic.calculate(x, oper, y);
-            System.out.println(logic.formatResult(result));
+            double result = logic.calculate(x, oper, y);
+            System.out.println(result);
 
             // store result?
             while (true) {
                 System.out.println(msg_4);
-                String ansStore = scanner.nextLine().trim().toLowerCase();
+                String answer = scanner.nextLine().trim();
 
-                if (ansStore.equals("y")) {
+                if (answer.equals("y")) {
                     memory = result;
                     break;
-                } else if (ansStore.equals("n")) {
+                } else if (answer.equals("n")) {
                     break;
                 }
-                // se input diverso da y/n, ripete la domanda
             }
 
             // continue?
             while (true) {
                 System.out.println(msg_5);
-                String ansCont = scanner.nextLine().trim().toLowerCase();
+                String answer = scanner.nextLine().trim();
 
-                if (ansCont.equals("y")) {
-                    break; // esce da questo while e riparte con una nuova equazione
-                } else if (ansCont.equals("n")) {
-                    return; // fine programma
+                if (answer.equals("y")) {
+                    break;
+                } else if (answer.equals("n")) {
+                    return;
                 }
-                // se input diverso da y/n, ripete la domanda
             }
         }
     }
