@@ -1,17 +1,9 @@
-package honestcalculator;
-
 import java.util.HashSet;
 import java.util.Set;
 
 public class Logic {
 
     private final Set<String> operators = new HashSet<>();
-
-    // messaggi lazy (IDENTICI)
-    private final String msg_6 = " ... lazy";
-    private final String msg_7 = " ... very lazy";
-    private final String msg_8 = " ... very, very lazy";
-    private final String msg_9 = "You are";
 
     public Logic() {
         operators.add("+");
@@ -24,50 +16,53 @@ public class Logic {
         return operators.contains(oper);
     }
 
-    public double parseValue(String token, double memory) {
+    // supports M and comma-decimals if they appear
+    public float parseValue(String token, float memory) {
         if (token.equals("M")) {
             return memory;
         }
-        return Double.parseDouble(token);
+        token = token.replace(',', '.');
+        return Float.parseFloat(token);
     }
 
-    public double calculate(double x, String oper, double y) {
+    public float calculate(float x, String oper, float y) {
         switch (oper) {
             case "+": return x + y;
             case "-": return x - y;
             case "*": return x * y;
             case "/": return x / y;
-            default:  return 0.0;
+            default:  return 0.0f;
         }
     }
 
-    // is_one_digit: intero matematico tra -9 e 9
-    public boolean is_one_digit(double v) {
-        return v > -10 && v < 10 && v == Math.floor(v);
+    // one digit = integer between -10 and 10 (exclusive)
+    public boolean isOneDigit(float value) {
+        return value > -10.0f && value < 10.0f && value == (int) value;
     }
 
-    // check: stampa "You are ..." se almeno una regola scatta
-    public void check(double v1, double v2, String oper) {
-        String msg = "";
+    // laziness rules -> return suffix (or "")
+    public String checkLaziness(float x, float y, String oper, String msg_6, String msg_7, String msg_8) {
+        StringBuilder out = new StringBuilder();
 
-        // 1) entrambi one-digit -> lazy
-        if (is_one_digit(v1) && is_one_digit(v2)) {
-            msg += msg_6;
+        if (isOneDigit(x) && isOneDigit(y)) {
+            out.append(msg_6);
         }
+        if (oper.equals("*") && (x == 1.0f || y == 1.0f)) {
+            out.append(msg_7);
+        }
+        if ((oper.equals("+") || oper.equals("-") || oper.equals("*")) && (x == 0.0f || y == 0.0f)) {
+            out.append(msg_8);
+        }
+        return out.toString();
+    }
 
-        // 2) moltiplicazione per 1 -> very lazy
-        if ((v1 == 1 || v2 == 1) && oper.equals("*")) {
-            msg += msg_7;
+    // print like examples: 200.0, 3.1, 5.0, 20.8
+    public String formatResult(float value) {
+        // if integer -> always show one decimal
+        if (value == (int) value) {
+            return String.format("%.1f", value);
         }
-
-        // 3) uso inutile dello 0 -> very, very lazy
-        if ((v1 == 0 || v2 == 0) &&
-                (oper.equals("*") || oper.equals("+") || oper.equals("-"))) {
-            msg += msg_8;
-        }
-
-        if (!msg.isEmpty()) {
-            System.out.println(msg_9 + msg);
-        }
+        // otherwise default float string is fine (keeps 3.1, 20.8, etc.)
+        return Float.toString(value);
     }
 }
